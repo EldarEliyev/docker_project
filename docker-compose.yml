@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Verilənlər bazası (PostgreSQL)
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=eldar_db
+      - POSTGRES_USER=eldar_user
+      - POSTGRES_PASSWORD=eldar_pass
+
+  # Redis (Broker və Cache üçün)
+  redis:
+    image: redis:7-alpine
+
+  # Bizim Django tətbiqi
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://eldar_user:eldar_pass@db:5432/eldar_db
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
