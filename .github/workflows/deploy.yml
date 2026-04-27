@@ -1,0 +1,24 @@
+name: Django Deployment
+
+on:
+  push:
+    branches: [ main ]  # Sən kodu 'main'ə push edəndə işə düşəcək
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/docker_project  # Serverdə proyektin olduğu qovluq
+            git pull origin main
+            docker-compose up -d --build
+            docker-compose exec -T web python manage.py j
